@@ -11,7 +11,8 @@ select faces, use concentric mates, measure, section and run Interference Detect
 | `stl/NN_*.stl` | STL exported from the solids (0.01 mm chord tolerance), for 3D printing. |
 | `build_step.py` | Parametric source (CadQuery). Edit a dimension in `P` and re-run to regenerate everything. |
 | `build_report.json` | Volume, bounding box and validity of every part from the last build. |
-| `preview.png` | Rendered check views: cut-away assembly, thread tip, ratchet and pawl, spiral shaft in nut. |
+| `solidworks/AddNeedleMates.bas` | SolidWorks macro that adds all motion mates to the opened assembly (see *Simulating*). |
+| `preview.png`, `handle_preview.png` | Rendered check views: full assembly, cut-away, thread tip, ratchet and pawl, spiral shaft in nut, handle. |
 
 Units are **mm**. The needle axis is the **Z axis**, and z = 0 is the bottom face of the housing. SolidWorks uses Y-up
 by default, so after opening the assembly the needle will lie horizontally. Use *View › Modify › Orientation* (or
@@ -30,40 +31,75 @@ Each `.SLDPRT` is an *Imported1* body, so there is no feature tree to edit. You 
 ## Verified fit
 
 - Every part is a single valid solid.
-- Volumes match the original STL generator within 0.1% for 8 of the 10 parts. The cannula hub is 1% lower because its
+- Volumes match the original STL generator within 0.1% for 7 of the 10 parts. The housing is larger only because of the new handle. The cannula hub is 1% lower because its
   ratchet teeth now have straight flanks. The sliding base is 2.7% lower because the old STL counted the volume where
   the foot, sleeve and ears overlap twice.
 - **Pairwise interference check over all 45 part pairs: zero overlap.** The ratchet phase was trimmed by 0.5° so the
   pawl tip seats in a tooth valley with about 0.01 mm clearance instead of digging into a flank.
 
-## Adding mates for a motion study
+## Simulating the mechanism in SolidWorks
 
-A STEP file stores part positions but cannot store SolidWorks mates. Your components arrive already in place, so
-adding mates does not move anything. In the FeatureManager, right-click each component and choose **Float**
-(keep `01_housing` **Fixed**), then add:
+A STEP file stores part positions but cannot store mates, and only SolidWorks can write `.SLDASM`. The macro
+`solidworks/AddNeedleMates.bas` therefore adds the mates inside SolidWorks. The parts are already in place, so
+nothing moves when the mates are added.
 
-| # | Mate | Pick |
-|---|---|---|
-| 1 | Concentric | `02_bottom_plug` bore Ø10.6 ↔ `01_housing` outer Ø38 face |
-| 2 | Coincident | top face of the plug flange ↔ bottom face of the housing (z = 0) |
-| 3 | Concentric | `03_cannula_hub` spigot Ø10 ↔ plug bore Ø10.6 (hub is free to rotate) |
-| 4 | Distance 0.2 | bottom face of the ratchet gear ↔ top face of the plug |
-| 5 | Concentric | `04_spiral_shaft_carrier` shaft Ø10 ↔ housing ledge bore Ø12 |
-| 6 | Distance 0.5 | top face of the carrier disc ↔ underside of the housing ledge |
-| 7 | Concentric | `05_rocker_pawl` bore Ø3.2 ↔ pawl post Ø3.0 on the carrier |
-| 8 | Distance 0.4 | top face of the pawl ↔ underside of the carrier disc |
-| 9 | Concentric | `06_push_cap_drive_nut` plunger OD Ø24 ↔ housing outer face |
-| 10 | Coincident | side face of a nut ear ↔ matching side wall of the housing key slot (stops rotation) |
-| 11 | Limit distance 28–58 | bottom face of the nut ↔ top face of the housing ledge (58 = at rest, 28 = fully pushed, giving the 30 mm stroke) |
-| 12 | **Screw** | nut ↔ shaft, 50 mm/rev, **reverse direction** for left-hand. Drives the shaft from the push. |
-| 13 | Concentric + Coincident | `07_top_cover_ring` ↔ housing bore; underside of the lip ↔ housing top face, plus Coincident between a key side and a slot wall |
-| 14 | Concentric + Coincident | `08_top_port` spigot Ø8.8 ↔ cap counterbore Ø9; port flange underside ↔ top face of the thumb pad |
-| 15 | Concentric + Coincident | `09_stylet` rod ↔ cannula bore; a hex flat on the stylet key ↔ a hex flat in the hub socket; bottom face of the hex key ↔ socket floor |
-| 16 | Concentric | `10_sliding_base` sleeve bore ↔ housing outer face (leave the axial position free, or add a Distance to set exposed needle length) |
+### 1. Add the mates (one-time, about 1 minute)
 
-To drive the cannula during the push stroke, add a **Gear mate 1:1** between the shaft and the hub for a quick animation.
-For true one-way ratchet action, use *SolidWorks Motion* with **Contact** between the pawl and the gear teeth, a
-torsion spring on the pawl, and a **Linear Spring** between the ledge top and the nut bottom.
+1. Open `step/00_full_assembly.step` as described above.
+2. **Tools › Macro › New…** and save it anywhere, for example as `AddNeedleMates.swp`. The VBA editor opens.
+3. In the VBA editor, use **File › Import File…** and pick `solidworks/AddNeedleMates.bas`. Alternatively, paste its contents into the module.
+4. Put the cursor inside `Sub main()` and press **F5**. A message box lists every mate as OK or FAIL.
+5. **File › Save As** › *Assembly (\*.sldasm)*. This is your working simulation file.
+
+| Mates the macro adds | Effect |
+|---|---|
+| Housing, bottom plug, cover ring and sliding base set to **Fixed** | Static frame |
+| Hub: concentric in the plug bore, plus Front-plane coincident | Cannula spins in place |
+| Shaft: concentric in the ledge bore, plus Front-plane coincident | Spiral shaft spins in place |
+| Pawl: concentric on the post (rotation locked), plus Front-plane coincident | Pawl rides on the carrier in the drive position |
+| Cap: concentric (rotation locked) and **limit distance 28–58 mm** from nut to ledge | Cap slides a 30 mm stroke and cannot turn |
+| **Screw** nut ↔ shaft, 50 mm per revolution | Pushing the cap turns the shaft 0.6 rev |
+| **Gear 1:1** shaft ↔ hub | Shaft turns the cannula (drive stroke) |
+| Port: concentric and coincident in the cap counterbore | Port rides with the cap |
+| Stylet: concentric (rotation locked) in the hub bore, hex key seated | Stylet turns with the cannula |
+
+**Direction check (do this once).** Drag the push cap down with the mouse. Seen from the top, the purple shaft must
+turn **clockwise**, with the nut pins following the spiral grooves. If the pins cut across the grooves instead, go
+to *Mates*, right-click **Spiral drive (nut-shaft)** › Edit Feature and toggle **Reverse**. The orange hub must turn the
+same way as the shaft, so the pawl tip stays in its tooth gap. If it turns the other way, toggle **Reverse** on
+**Ratchet drive (shaft-hub)**.
+
+The macro finds each face by its geometry (cylinder radius and axis, or plane height). It could not be run here
+because SolidWorks wasn't available, so it is untested. If a mate reports FAIL, add that mate by hand using the table
+above; every face it needs is named there.
+
+### 2. Run the push stroke
+
+- **Quick check:** drag the thumb pad. The cap slides, the shaft and cannula turn, and the stroke stops at 30 mm.
+- **Animation:** open the **Motion Study 1** tab and set the study type to *Animation* (or *Basic Motion*). Add a
+  **Linear Motor** on the top face of the thumb pad, direction down, type **Distance**, 30 mm, from 0 s over 1 s.
+  Then **Calculate** and **Play**. The cannula turns 0.6 rev, which is 0.6 mm of thread advance per push.
+  Add *Interference Detection* or a section view to watch the pins in the grooves.
+- **True one-way ratchet with spring return:** this needs the *SOLIDWORKS Motion* add-in and a *Motion Analysis* study.
+  1. Suppress the gear mate.
+  2. Add **Contact** between the pawl and the cannula hub.
+  3. Add a **Linear Spring** between the ledge top and the nut bottom (free length 65 mm; use the rate of the spring you buy).
+  4. Add a small **Torsion Spring** on the pawl.
+
+  The cap then springs back and the pawl clicks over the teeth, so the cannula stays where the push left it.
+
+## Finger-grip handle
+
+The housing has a syringe-style handle at the top: two wings along ±X, 104 mm tip to tip, 22 mm wide and 12 mm
+thick, with Ø24 finger scallops (2 mm deep) on the underside and 2 mm rounded edges. Hook your index and middle
+fingers under the wings and press the cap with your thumb. The grip span from the wing underside to the top of the
+thumb pad is 53 mm at rest and 23 mm at the end of the stroke.
+
+- The wings are part of the housing, not the press-fit cover ring, so finger pull goes straight into the housing wall.
+- They sit at ±X, clear of the internal key slots (±Y) and of the cap, which stops 6 mm above them.
+- The wings now limit how far the sliding base can ride up. The maximum exposed needle length goes from about 99 mm to about 92 mm (range now about 14–92 mm).
+- All handle sizes are in the `HANDLE` dict in `build_step.py`. Set `HANDLE = None` to build the plain housing.
+- See `handle_preview.png`.
 
 ## Parts to buy (not modeled)
 

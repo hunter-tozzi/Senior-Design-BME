@@ -83,6 +83,31 @@ parts = {}
 # ======================================================================
 lz, lt = P['ledge_z'], P['ledge_t']
 housing = ring(Ri, Ro, 0, H).union(ring(P['ledge_bore'] / 2, Ri + 0.01, lz, lz + lt))
+# Finger-grip handle (syringe style): two wings along +/-X just under the top.
+# Hook index + middle finger under the wings, push the cap with the thumb.
+# Built into the housing so the grip load goes straight into the wall, not
+# through the press-fit cover ring. Wings sit at x = +/-X, away from the key
+# slots (+/-Y); the underside is at z = HANDLE['z0'], which caps how far the
+# sliding base can ride up (max exposed needle ~92 mm instead of ~99 mm).
+HANDLE = dict(span=104.0, width=22.0, z0=88.0, scallop_r=12.0, scallop_depth=2.0,
+              scallop_x=36.0, edge_r=2.0)
+if HANDLE:
+    hz0, hz1 = HANDLE['z0'], H
+    wings = (cq.Workplane("XY").workplane(offset=hz0)
+             .slot2D(HANDLE['span'], HANDLE['width']).extrude(hz1 - hz0)
+             .edges("not |Z").fillet(HANDLE['edge_r']))   # round the top and bottom outline
+    for sx in (-1, 1):                                   # finger scallops on the underside
+        scallop = (cq.Workplane("XZ")
+                   .center(sx * HANDLE['scallop_x'], hz0 - HANDLE['scallop_r'] + HANDLE['scallop_depth'])
+                   .circle(HANDLE['scallop_r']).extrude(HANDLE['width'], both=True))
+        wings = wings.cut(scallop)
+    try:                                                 # soften the scallop edges
+        wings = wings.edges(cq.selectors.BoxSelector((-60, -15, hz0 - 1), (60, 15, hz0 + HANDLE['scallop_depth'] + 0.1))) \
+                     .edges("not |Z").fillet(1.0)
+    except Exception:
+        pass
+    housing = housing.union(wings.cut(cyl(Ri + 0.5, hz0 - 1, hz1 + 1)))
+
 for c in SLOT_ANGLES:
     housing = housing.cut(sector(Ri - 0.5, P['slot_r'], c - P['slot_half'], c + P['slot_half'],
                                  P['slot_z0'], H + 0.1))
