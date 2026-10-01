@@ -12,6 +12,7 @@ select faces, use concentric mates, measure, section and run Interference Detect
 | `build_step.py` | Parametric source (CadQuery). Edit a dimension in `P` and re-run to regenerate everything. |
 | `build_report.json` | Volume, bounding box and validity of every part from the last build. |
 | `solidworks/AddNeedleMates.bas` | SolidWorks macro that adds all motion mates to the opened assembly (see *Simulating*). |
+| `animation/needle_mechanism.mp4` (`.gif`) | 20 s animation of six push strokes, rendered from the CAD geometry by `animate.py`. |
 | `preview.png`, `handle_preview.png` | Rendered check views: full assembly, cut-away, thread tip, ratchet and pawl, spiral shaft in nut, handle. |
 
 Units are **mm**. The needle axis is the **Z axis**, and z = 0 is the bottom face of the housing. SolidWorks uses Y-up
@@ -87,6 +88,27 @@ above; every face it needs is named there.
   4. Add a small **Torsion Spring** on the pawl.
 
   The cap then springs back and the pawl clicks over the teeth, so the cannula stays where the push left it.
+
+## Animation
+
+`animation/needle_mechanism.mp4` shows six push strokes rendered from this model:
+
+| Panel | Shows |
+|---|---|
+| Left | Half-section of the whole device, with the return spring drawn in. |
+| Middle | Top view of the ratchet and pawl. |
+| Right | The threaded tip in a section of bone: 3 mm cortex over marrow. |
+| Bottom | Charts of cap travel and needle advance. |
+
+The kinematics come straight from the geometry:
+
+- **Push:** the cap travels 30 mm and the 50 mm left-hand spiral turns the shaft −216°, clockwise seen from the top.
+- **Return:** the pawl rocks out over the teeth and the cannula holds its position.
+- **Slack:** 216° is not a whole number of 15° teeth. After the first stroke, each push takes up 6° of slack before
+  the pawl engages, so steady-state advance is 210° per push, or 0.58 mm with the 1.0 mm-pitch thread.
+- **Total:** six pushes give 3.52 mm of advance, enough to cross a 3 mm cortex.
+
+To re-render after changing the model, run `xvfb-run -a python animate.py` (about 4 minutes; needs `vtk` and `ffmpeg`).
 
 ## Finger-grip handle
 
