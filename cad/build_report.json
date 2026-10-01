@@ -1,0 +1,177 @@
+{
+ "P": {
+  "can_od": 3.05,
+  "can_id": 2.39,
+  "can_len": 101.6,
+  "thr_pitch": 1.0,
+  "thr_depth": 0.4,
+  "thr_len": 6.0,
+  "thr_lead": 1.5,
+  "flute_len": 3.0,
+  "sty_d": 2.3,
+  "trocar_len": 2.5,
+  "hous_od": 38.0,
+  "hous_id": 32.0,
+  "hous_h": 100.0,
+  "ledge_z": 18.0,
+  "ledge_t": 4.0,
+  "ledge_bore": 12.0,
+  "slot_z0": 49.0,
+  "slot_r": 17.3,
+  "slot_half": 0.4,
+  "shaft_od": 10.0,
+  "channel_d": 4.2,
+  "groove_depth": 1.2,
+  "groove_lead": 50.0,
+  "stroke": 30.0,
+  "nut_rest_z": 80.0,
+  "nut_h": 14.0,
+  "gear_r0": 8.0,
+  "gear_r1": 9.5,
+  "gear_n": 24
+ },
+ "tip_z": -103.6,
+ "tipA": [
+  8.559036336660913,
+  1.3976350032266724
+ ],
+ "tipB": [
+  13.469715802382913,
+  -3.687522444837335
+ ],
+ "gear_offset_deg": 8.774175239946446,
+ "pad_top": 141.0,
+ "knob_z": 165.5,
+ "parts": {
+  "01_housing": {
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 33985.09,
+   "bbox": [
+    -19.0,
+    -19.0,
+    0.0,
+    19.0,
+    19.0,
+    100.0
+   ]
+  },
+  "02_bottom_plug": {
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 6357.63,
+   "bbox": [
+    -19.0,
+    -19.0,
+    -2.0,
+    19.0,
+    19.0,
+    6.0
+   ]
+  },
+  "03_cannula_hub": {
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 2699.47,
+   "bbox": [
+    -9.498,
+    -9.498,
+    -103.6,
+    9.498,
+    9.498,
+    14.0
+   ]
+  },
+  "04_spiral_shaft_carrier": {
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 7966.95,
+   "bbox": [
+    -15.6,
+    -15.6,
+    6.2,
+    15.6,
+    15.6,
+    100.0
+   ]
+  },
+  "05_rocker_pawl": {
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 82.69,
+   "bbox": [
+    8.38,
+    -3.85,
+    6.8,
+    14.5,
+    2.3,
+    13.8
+   ]
+  },
+  "06_push_cap_drive_nut": {
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 29197.46,
+   "bbox": [
+    -16.0,
+    -17.0,
+    80.0,
+    16.0,
+    17.0,
+    141.0
+   ]
+  },
+  "07_top_cover_ring": {
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 2681.4,
+   "bbox": [
+    -19.0,
+    -19.0,
+    94.0,
+    19.0,
+    19.0,
+    101.5
+   ]
+  },
+  "08_top_port": {
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 479.86,
+   "bbox": [
+    -6.0,
+    -6.0,
+    139.5,
+    6.0,
+    6.0,
+    150.5
+   ]
+  },
+  "09_stylet": {
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 2267.22,
+   "bbox": [
+    -6.0,
+    -6.0,
+    -106.1,
+    6.0,
+    6.0,
+    175.5
+   ]
+  },
+  "10_sliding_base": {
+   "valid": true,
+   "solids": 1,
+   "volume_mm3": 41467.71,
+   "bbox": [
+    -28.0,
+    -28.0,
+    -50.0,
+    28.3,
+    28.0,
+    50.0
+   ]
+  }
+ }
+}
